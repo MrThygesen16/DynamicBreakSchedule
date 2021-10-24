@@ -178,19 +178,13 @@ public class BreakSchedule {
 	public static void main(String[] args){
 
 		BreakSchedule x= new BreakSchedule();
-		String w= "abcdefghijklmnopqrst";
+		String w= "Holiday";
 		ArrayList<Integer> b= new ArrayList<Integer>();
+		b.add(0);
 		b.add(3);
-		b.add(8);
-		b.add(10);
-		ArrayList<Integer> schedule= x.breakSchedule(w,b);
-		ArrayList<Integer> answer = new ArrayList<Integer>(); 
-		answer.add(10);
-		answer.add(8);
-		answer.add(3);
-		for(int i=0; i< schedule.size(); i++){
-		 	System.out.println(schedule.get(i));
-		}	
+		int cost = x.totalCost(w,b);
+
+		System.out.println(cost);
 
 	}
 
