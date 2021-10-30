@@ -12,8 +12,6 @@ public class BreakSchedule {
 	// might need to implement the dynamic programming strategy requested for Tasks 2&3.
 	// Make sure however that all your declarations are public.
 	
-	
-
 	// TASK 1
 
 	// Precondition: word is a string and breakList is an array of integers in strictly increasing order
@@ -23,10 +21,30 @@ public class BreakSchedule {
 	//                Refer to the assignment specification for how a single break contributes to the cost.
 	
 	// holds list for best cuts to perform
-	ArrayList<Integer> optimalBreak =  new ArrayList<Integer>();
+	ArrayList<Integer> optimalBreak;
 	
 	// holds starting and ending index for the word
-	int[] startEndIdx = new int[2];
+	int[] wordMarker;
+
+	// ...
+	boolean wordIsSet = false;
+
+	
+	public void setWordMarker(String word){
+		
+		if (wordIsSet){
+			return;
+		}
+
+		optimalBreak =  new ArrayList<Integer>();
+		wordIsSet = true;
+
+		wordMarker = new int[2];
+
+		wordMarker[0] = 0;
+		wordMarker[1] = word.length();
+		
+	}
 
 	int totalCost (String word, ArrayList<Integer> breakList){ 
 
@@ -43,13 +61,10 @@ public class BreakSchedule {
 		// init tempWord to word
 		String tempWord = word;
 
-		// this means no breaks have been performed -- no need to copy out word, since it's not a substring...
-		if (optimalBreak.isEmpty()){
-			startEndIdx[0] = 0;
-			startEndIdx[1] = word.length();
+		if (!wordIsSet){
+			setWordMarker(word);
 		} else {
-			// copy of word that has been split at the indexes seen previously
-			tempWord = word.substring(startEndIdx[0], startEndIdx[1]);
+			tempWord = word.substring(wordMarker[0], wordMarker[1]);
 		}
 
 		// the cost of cutting the current word...
@@ -57,57 +72,17 @@ public class BreakSchedule {
 
 		// non-empty string and size > 0
 		if(isSingleBreakItem(breakList)){	
-
+			
 			// check if the last item in breakList is feasible or not
-			int result = isFeasible(tempWord, breakList.get(0));
-
-			if (result != 0){
+			if (costOfSingleItem(word, breakList.get(0)) != 0){
 				optimalBreak.add(breakList.get(0));
+				return len;
 			}
 
-			return result;
+			return 0;
 		}
 		
-		// we initially set the size of the left and right sub-string values to the length of word
-		// because, if a cut is not feasible, and we compare the lengths, the cut that is possible will be chosen
-		int[] sizeLeftRight = {word.length(), word.length()};
-
-		// left break point value
-		int leftElem = breakList.get(0);
-
-		// right break point value
-		int rightElem = breakList.get(breakList.size()-1);
-		
-		// left elem
-		if (isFeasible(word, leftElem) != 0){
-			sizeLeftRight[0] = tempWord.substring(leftElem).length();
-			//leftCost = word.length() + totalCost(word.substring(breakList.get(0)), breakList);
-		}
-
-		// right elem
-		if (isFeasible(word, rightElem) != 0){
-			sizeLeftRight[1] = tempWord.substring(startEndIdx[0], rightElem).length();
-			//rightCost = word.length() + totalCost(word.substring(0,breakList.get(breakList.size()-1)), breakList);
-		}
-
-		// 0 is left, 1 is right
-		// take the minimum of the two values
-		int min = compareLeftRight(sizeLeftRight[0], sizeLeftRight[1]);
-
-		// left is smaller
-		if (min == 0){
-			optimalBreak.add(optimalBreak.size(), leftElem);
-			startEndIdx[0] = leftElem;
-			// remove left element
-			breakList.remove(0);
-		
-		// right is smaller
-		} else {
-			optimalBreak.add(optimalBreak.size(), rightElem);
-			startEndIdx[1] = rightElem+1;
-			// remove right element
-			breakList.remove(breakList.get(breakList.size()-1));
-		}
+		determineOptimalCut(word, tempWord, breakList);
 
 		return len + totalCost(word, breakList);
 	}
@@ -129,7 +104,7 @@ public class BreakSchedule {
 	}
 
 	// if the break index is greater than the word's last index, not feasible
-	int isFeasible(String word, int item){
+	int costOfSingleItem(String word, int item){
 		if (item >= word.length()-1 || item < 0){
 			return 0;
 		}
@@ -137,15 +112,50 @@ public class BreakSchedule {
 		return word.length();
 	}
 
-	// returns the index of the two substrings from word
-	// 0 is the left item
-	// 1 is the right
-	int compareLeftRight(int left, int right){
-		if(left < right){
-			return 0;		
+	// determine to cut from left or right
+	public void determineOptimalCut(String word, String tempWord, ArrayList<Integer> breakList){
+		// initialise costOfCuts to the length of the word itself
+		int[] costOfCuts = {word.length(), word.length()};
+
+		// left break point value
+		int leftElem = breakList.get(0);
+
+		// right break point value
+		int rightElem = breakList.get(breakList.size()-1);
+		
+		// left elem
+		if (costOfSingleItem(word, leftElem) != 0){
+			// review this and the feasible for rightElem
+			//sizeLeftRight[0] = (wordMarker[1] - leftElem);
+			
+			costOfCuts[0] = tempWord.substring(leftElem+1, wordMarker[1]).length();
+			
+			//leftCost = word.length() + totalCost(word.substring(breakList.get(0)), breakList);
 		}
-	
-		return 1;
+
+		// right elem
+		if (costOfSingleItem(word, rightElem) != 0){
+			//sizeLeftRight[1] = (rightElem - wordMarker[0]);
+			
+			costOfCuts[1] = tempWord.substring(wordMarker[0], rightElem).length();
+			
+			//rightCost = word.length() + totalCost(word.substring(0,breakList.get(breakList.size()-1)), breakList);
+		}
+
+		// left is smaller
+		if (costOfCuts[0] < costOfCuts[1]){
+			optimalBreak.add(optimalBreak.size(), leftElem);
+			wordMarker[0] = leftElem+1;
+			// remove left element
+			breakList.remove(0);
+		
+		// right is smaller
+		} else {
+			optimalBreak.add(optimalBreak.size(), rightElem);
+			wordMarker[1] = rightElem+1;
+			// remove right element
+			breakList.remove(breakList.get(breakList.size()-1));
+		}
 	}
 
 
@@ -178,12 +188,11 @@ public class BreakSchedule {
 	public static void main(String[] args){
 
 		BreakSchedule x= new BreakSchedule();
-		String w= "Holiday";
+		String w= "abcdefghijk";
 		ArrayList<Integer> b= new ArrayList<Integer>();
-		b.add(0);
 		b.add(3);
+		b.add(8);
 		int cost = x.totalCost(w,b);
-
 		System.out.println(cost);
 
 	}

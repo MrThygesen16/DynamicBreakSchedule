@@ -142,7 +142,7 @@ public class assignment2Tests {
 		b.add(3);
 		b.add(8);
 		b.add(10);
-		assertEquals(40, x.totalCost(w,b));
+		assertEquals(38, x.totalCost(w,b));
 	}
 
 	@Test
@@ -187,12 +187,38 @@ public class assignment2Tests {
 		ArrayList<Integer> schedule= x.breakSchedule(w,b);
 		ArrayList<Integer> answer = new ArrayList<Integer>(); 
 		answer.add(10);
-		answer.add(8);
 		answer.add(3);
+		answer.add(8);
 		for(int i=0; i< schedule.size(); i++){
 		 	assertEquals(answer.get(i), schedule.get(i));
 		}		
 	}
+
+
+	@Test
+	public void customTest5() {
+		BreakSchedule x= new BreakSchedule();
+		String w= "abcdefghijklmnopqrst";
+		ArrayList<Integer> b= new ArrayList<Integer>();
+		b.add(3);
+		b.add(8);
+		b.add(10);
+		assertEquals(38, x.totalCost(w,b));
+		
+	}
+
+
+	@Test
+	public void customTest6() {
+		BreakSchedule x= new BreakSchedule();
+		String w= "abcdefghijk";
+		ArrayList<Integer> b= new ArrayList<Integer>();
+		b.add(3);
+		b.add(8);
+		assertEquals(18, x.totalCost(w,b));
+		
+	}
+
 
 	
 
